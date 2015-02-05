@@ -39,10 +39,10 @@ MSISPM_FLASH = 0xFD12
 MSISPM_FLASH_NEW = 0xFD13
 
 DEVICE_TYPES = {
-    MSISPM_OLD:         ((1,),          '1-socket mSiS-PM'),
-    SISPM:              ((1, 2, 3, 4),  '4-socket SiS-PM'),
-    MSISPM_FLASH:       ((1,),          '1-socket mSiS-PM'),
-    MSISPM_FLASH_NEW:   ((1, 2, 3, 4),  '4-socket SiS-PM'),
+    MSISPM_OLD:         ((1,),          u'1-socket mSiS-PM'),
+    SISPM:              ((1, 2, 3, 4),  u'4-socket SiS-PM'),
+    MSISPM_FLASH:       ((1,),          u'1-socket mSiS-PM'),
+    MSISPM_FLASH_NEW:   ((1, 2, 3, 4),  u'4-socket SiS-PM'),
 }
 
 TRIES = 5
@@ -70,7 +70,7 @@ class OutletException(Exception):
         self.outlet = outlet
 
     def __str__(self):
-        return 'illegal outlet id %s' % self.outlet
+        return u'illegal outlet id %s' % self.outlet
 
 
 class OutletDevice(object):
@@ -149,8 +149,8 @@ class OutletDevice(object):
         return {
             'manufacturer': self.device.manufacturer,
             'product': self.device.product,
-            'idVendor': '0x' + hex(self.device.idVendor)[2:].zfill(4),
-            'idProduct': '0x' + hex(self.device.idProduct)[2:].zfill(4),
+            'idVendor': u'0x' + hex(self.device.idVendor)[2:].zfill(4),
+            'idProduct': u'0x' + hex(self.device.idProduct)[2:].zfill(4),
             'serial': self.serial,
             'devicetype': DEVICE_TYPES[self.device.idProduct][1],
             'outlets': self.outlets,
@@ -162,7 +162,7 @@ class OutletDevice(object):
         """
         Get serial number as hex string from device.
         """
-        return ':'.join(hex(i)[2:].zfill(2) for i in self._get_serial())
+        return u':'.join(hex(i)[2:].zfill(2) for i in self._get_serial())
 
     @property
     def outlets(self):
