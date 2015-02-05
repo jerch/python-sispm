@@ -28,6 +28,7 @@ __version__ = '0.1.0'
 from usb.core import find, USBError
 from usb.util import dispose_resources
 from time import sleep
+from functools import wraps
 
 VENDOR = 0x04B4  # Gembird
 
@@ -48,6 +49,7 @@ TRIES = 5
 
 
 def autodispose(func):
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
             result = func(self, *args, **kwargs)
@@ -76,7 +78,7 @@ class OutletDevice(object):
     OutletDevice - class for a Gembird USB Outlet.
 
     The class encapsulates the USB commands needed to control the devices.
-    By default the device gets autodisposed after an interaction to ensure,
+    By default the device gets auto disposed after an interaction to ensure,
     other applications can still access the device meanwhile.
     Set `autodispose` to `False` if you want to occupy the device or have
     many actions in bulk. To dispose the device manually, call `dispose()`.
@@ -135,6 +137,7 @@ class OutletDevice(object):
     def dispose(self):
         """
         Release device resources so other applications can use it meanwhile.
+        A disposed device gets auto claimed upon the next interaction.
         """
         dispose_resources(self.device)
 
@@ -173,7 +176,8 @@ class OutletDevice(object):
         """
         Get status of outlet `num` (`True` for powered on,
         `False` for powered off).
-        If `num` is 'all' a dictionary of outlet ids and status is returned.
+        If `num` is 'all' a dictionary of all outlet ids and their
+        status is returned.
         """
         if num in self.outlets:
             return self._status(num)
@@ -186,7 +190,8 @@ class OutletDevice(object):
         """
         Power outlet `num` on. Returns `True` on sucess, `False` on failure.
         Success is checked by an additionally status request.
-        If `num` is 'all' a dictionary of outlet ids and success is returned.
+        If `num` is 'all' all available outlets will get powered on and
+        a dictionary of outlet ids and success is returned.
         """
         if num in self.outlets:
             return self._on(num)
@@ -199,7 +204,8 @@ class OutletDevice(object):
         """
         Power outlet `num` off. Returns `True` on sucess, `False` on failure.
         Success is checked by an additionally status request.
-        If `num` is 'all' a dictionary of outlet ids and success is returned.
+        If `num` is 'all' all available outlets will get powered off and
+        a dictionary of outlet ids and success is returned.
         """
         if num in self.outlets:
             return self._off(num)
@@ -212,7 +218,8 @@ class OutletDevice(object):
         """
         Toggle outlet `num`. Returns `True` on sucess, `False` on failure.
         Success is checked by an additionally status request.
-        If `num` is 'all' a dictionary of outlet ids and success is returned.
+        If `num` is 'all' all available outlets will get toggled and
+        a dictionary of outlet ids and success is returned.
         """
         if num in self.outlets:
             return self._off(num) if self._status(num) else self._on(num)
@@ -228,7 +235,7 @@ def get_devices(products=(MSISPM_OLD, SISPM, MSISPM_FLASH, MSISPM_FLASH_NEW)):
     `products` defaults to a tuple of known working Gembird device identifiers.
     Override products with caution, the usb commands might destroy a wrong device.
 
-    NOTE: You need appropriate user permissions for most actions.
+    NOTE: You need appropriate user permissions to access the devices.
     """
     for device in find(idVendor=VENDOR, find_all=True):
         if device.idProduct in products:
